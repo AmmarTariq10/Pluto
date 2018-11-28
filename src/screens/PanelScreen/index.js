@@ -1,15 +1,52 @@
 import React, {Component} from 'react';
-import {Text, View,TouchableOpacity,ImageBackground,ScrollView} from 'react-native';
+import {Text, View,TouchableOpacity,ImageBackground,ScrollView,AsyncStorage} from 'react-native';
 import styles from './styles'
 import Header from '../../Components/Header/Header'
 import RoundButton from '../../Components/Buttons/RoundButton'
 import RoomButton from '../../Components/Buttons/RoomButton'
+import Api from '../../Api';
 export default class PanelScreen extends Component{
   componentDidMount(){
+    AsyncStorage.getItem('PlutoUserData')
+    .then(
+      d=>{
+        let data = JSON.parse(d)
+        console.log(data)
+        Api('/devices/get/byuser', {
+          username:data.credentials.username,
+          password:data.credentials.password,
+          token:data.data.value
+        },data=>{
+          console.log('from screen success',data.message[0])
+          data.message.forEach(
+            d=>{
+              for(var key in d){
+                this.setState(
+                  p=>{
+                    return{
+                      ...p,
+                      devices:[...p.devices,...d[key]]
+                    }
+                  }
+                )
+                console.log('devices',this.state.devices)
+              }
+            }
+          )
 
+
+        },error=>{
+          Toast.show(error.message.toString())
+        })
+      }
+    )
+    
   }
   constructor(props){
     super(props)
+    this.state={
+      devices:[]
+    }
     // EventRegister.addEventListener('NavToContactUs', () => {
     //   console.log('executed')
     //   this.props.navigation.navigate('ContactUs')
@@ -28,31 +65,14 @@ export default class PanelScreen extends Component{
         </View>
           <View style={styles.listContainer}>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{alignItems:"center"}} style={styles.scroll}>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
-              <RoomButton onPress={()=>{this.props.navigation.navigate('Devices')}}/>
+              {this.state.devices.map(
+                device=>{
+                  return(
+              <RoomButton key={device._id} device={device} onPress={()=>{this.props.navigation.navigate('Devices')}}/>
+
+                  )
+                }
+              )}
           </ScrollView>
           <View style={styles.buttonContainer}>
               <TouchableOpacity onPress={()=>this.props.navigation.navigate('Devices')} style={styles.button}><Text style={styles.text}>Accessibilites</Text></TouchableOpacity>

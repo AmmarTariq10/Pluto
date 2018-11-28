@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View } from 'react-native'
+import { View, AsyncStorage } from 'react-native'
 
 import {createSwitchNavigator,createStackNavigator} from 'react-navigation'
 import { EventRegister } from 'react-native-event-listeners'
@@ -23,7 +23,6 @@ export default class MainNavigator extends Component {
     EventRegister.removeAllListeners()
   }
   componentDidMount(){
-  //   SplashScreen.hide()
     EventRegister.addEventListener('userAuthorized', (data) => {
       this.setState(
         p=>{
@@ -31,9 +30,9 @@ export default class MainNavigator extends Component {
             ...p,
             authorized:true
           }
-        }
+
+        },SplashScreen.hide()
       )
-    SplashScreen.hide()
   })
   EventRegister.addEventListener('userUnauthorized', () => {
     this.setState(
@@ -42,10 +41,20 @@ export default class MainNavigator extends Component {
           ...p,
           authorized:false
         }
-      }
+      },SplashScreen.hide()
     )
   })
-  SplashScreen.hide()
+  AsyncStorage.getItem('PlutoUserData').then(
+    d=>{
+      if(d){
+        EventRegister.emit('userAuthorized')
+      }else{
+        EventRegister.emit('userUnauthorized')
+
+      }
+    }
+  )
+  // SplashScreen.hide()
     console.log('hiding splash')
   }
   renderNavigator =() =>{
